@@ -12,7 +12,7 @@ import { Canvas, useFrame, useGraph } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { useDropzone } from 'react-dropzone'; // Ensure correct import
 
-// --- Constants ---
+// Constants
 const smoothingFactor = 0.3;
 
 // Options defined globally as constants
@@ -30,7 +30,7 @@ const poseOptions: PoseLandmarkerOptions = {
 };
 
 
-// --- Helper Functions ---
+// Helper Functions
 const vectorFromLandmark = (lm: Landmark): THREE.Vector3 => {
     // Adjustments might be needed based on coordinate systems (e.g., Y/Z inversion)
     return new THREE.Vector3(lm.x, 1 - lm.y, -lm.z); // Example inversion
@@ -69,7 +69,7 @@ const getWorldQuaternion = (bone: THREE.Bone | undefined): THREE.Quaternion => {
  };
 
 
-// --- Avatar Component ---
+// Avatar Component
 interface AvatarProps {
     url: string;
     faceResult: any;
@@ -85,7 +85,7 @@ function Avatar({ url, faceResult, handResult, poseResult }: AvatarProps) {
     const { nodes } = useGraph(scene);
     const avatarRef = useRef<THREE.Group>(null!);
 
-    // --- Bone Refs --- (Ensure names match your GLB model)
+    // Bone Refs (Ensure names match your GLB model)
     const headRef = useRef<THREE.Bone>();
     const neckRef = useRef<THREE.Bone>();
     const spine2Ref = useRef<THREE.Bone>();
@@ -154,13 +154,13 @@ function Avatar({ url, faceResult, handResult, poseResult }: AvatarProps) {
     }, [nodes, scene, url]); // Re-run if URL changes
 
     useFrame((state, delta) => {
-        // --- Reusable Vectors/Quaternions ---
+        // Reusable Vectors/Quaternions
         // Declared here to be reused across face/pose/hand logic within the same frame
          const parentWorldInv = new THREE.Quaternion();
          const targetLocalDir = new THREE.Vector3();
          const targetQuaternion = new THREE.Quaternion(); // REUSE this quaternion
 
-        // --- Face Blendshapes and Head Rotation ---
+        // Face Blendshapes and Head Rotation
         if (faceResult?.faceBlendshapes?.length > 0 && faceResult.faceBlendshapes[0].categories) {
              const faceBlendshapes = faceResult.faceBlendshapes[0].categories;
               faceBlendshapes.forEach((element: Category) => {
@@ -201,7 +201,7 @@ function Avatar({ url, faceResult, handResult, poseResult }: AvatarProps) {
         }
 
 
-        // --- Pose Landmarks (Arms) ---
+        // Pose Landmarks (Arms)
         if (poseResult && poseResult.worldLandmarks && poseResult.worldLandmarks.length > 0) {
              const worldLandmarks = poseResult.worldLandmarks[0];
               const pLeftShoulder = vectorFromLandmark(worldLandmarks[11]);
@@ -243,7 +243,7 @@ function Avatar({ url, faceResult, handResult, poseResult }: AvatarProps) {
                }
         }
 
-        // --- Hand Landmarks (Wrist + ALL Fingers) ---
+        // Hand Landmarks (Wrist + ALL Fingers)
         if (handResult && handResult.worldLandmarks && handResult.worldLandmarks.length > 0) {
             handResult.worldLandmarks.forEach((handLandmarks: Landmark[], index: number) => {
                  if (handResult.handednesses && handResult.handednesses[index] && handResult.handednesses[index][0]) {
@@ -251,7 +251,7 @@ function Avatar({ url, faceResult, handResult, poseResult }: AvatarProps) {
                      const isLeft = handedness === 'Left';
                      const handRef = isLeft ? leftHandRef : rightHandRef;
                      const lowerArmRef = isLeft ? leftLowerArmRef : rightLowerArmRef;
-                     // ... (finger ref assignments remain the same) ...
+                     // finger ref assignments remain the same) 
                      const thumbRefs = isLeft ? [leftHandThumb1Ref, leftHandThumb2Ref, leftHandThumb3Ref] : [rightHandThumb1Ref, rightHandThumb2Ref, rightHandThumb3Ref];
                      const indexRefs = isLeft ? [leftHandIndex1Ref, leftHandIndex2Ref, leftHandIndex3Ref, leftHandIndex4Ref] : [rightHandIndex1Ref, rightHandIndex2Ref, rightHandIndex3Ref, rightHandIndex4Ref];
                      const middleRefs = isLeft ? [leftHandMiddle1Ref, leftHandMiddle2Ref, leftHandMiddle3Ref, leftHandMiddle4Ref] : [rightHandMiddle1Ref, rightHandMiddle2Ref, rightHandMiddle3Ref, rightHandMiddle4Ref];
@@ -266,7 +266,7 @@ function Avatar({ url, faceResult, handResult, poseResult }: AvatarProps) {
                      const ringMCP = handLandmarks[13]; const ringPIP = handLandmarks[14]; const ringDIP = handLandmarks[15]; const ringTIP = handLandmarks[16];
                      const pinkyMCP = handLandmarks[17]; const pinkyPIP = handLandmarks[18]; const pinkyDIP = handLandmarks[19]; const pinkyTIP = handLandmarks[20];
 
-                     // --- Hand (Wrist) Rotation ---
+                     // Hand (Wrist) Rotation
                      if (handRef.current && lowerArmRef.current) {
                          targetLocalDir.subVectors(vectorFromLandmark(middleMCP), vectorFromLandmark(wristLm)).normalize();
                          parentWorldInv.copy(getWorldQuaternion(lowerArmRef.current)).invert();
@@ -275,7 +275,7 @@ function Avatar({ url, faceResult, handResult, poseResult }: AvatarProps) {
                          handRef.current.quaternion.slerp(targetQuaternion, smoothingFactor);
                      }
 
-                    // --- Finger Rotations --- (Using the helper function)
+                    // Finger Rotations (Using the helper function)
                     // Thumb
                     rotateFingerSegment(thumbRefs[0], handRef, thumbCMC, thumbMCP, boneDefaultDirection);
                     rotateFingerSegment(thumbRefs[1], thumbRefs[0], thumbMCP, thumbIP, boneDefaultDirection);
@@ -307,7 +307,7 @@ function Avatar({ url, faceResult, handResult, poseResult }: AvatarProps) {
 }
 
 
-// --- App Component ---
+// App Component
 function App() {
     const [url, setUrl] = useState<string>("https://models.readyplayer.me/6460d95f9ae10f45bffb2864.glb?morphTargets=ARKit&textureAtlas=1024");
     const [faceResult, setFaceResult] = useState<any>(null);
@@ -331,7 +331,7 @@ function App() {
       };
 
 
-    // --- Dropzone and Input Handling ---
+    // Dropzone and Input Handling
     const onDrop = useCallback((acceptedFiles: File[]) => {
         if (acceptedFiles.length > 0) {
             const file = acceptedFiles[0];
@@ -371,7 +371,7 @@ function App() {
         }
     };
 
-     // --- Webcam and Prediction Loop --- (Define before setupMediaPipe)
+     // Webcam and Prediction Loop (Define before setupMediaPipe)
      const startWebcam = useCallback(() => { // Use useCallback here
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
             setError("getUserMedia() is not supported by your browser");
@@ -384,7 +384,7 @@ function App() {
             .then((stream) => {
                 if (videoRef.current) {
                     videoRef.current.srcObject = stream;
-                    // Start loop *after* setup is complete and video is playing
+                    // Start loop after setup is complete and video is playing
                     // The listener logic is moved to setupMediaPipe success path
                     console.log("Webcam stream acquired.");
                 } else {
@@ -454,7 +454,7 @@ function App() {
         predict(); // Start the loop
     }, [predict]); // Depends on predict
 
-    // --- Mediapipe Setup ---
+    // Mediapipe Setup
     const setupMediaPipe = useCallback(async () => {
         if (visionRunningRef.current) {
             console.log("Mediapipe setup already running or complete.");
@@ -503,7 +503,7 @@ function App() {
     }, [startWebcam, startPredictionLoop]);
 
 
-    // --- Main Effect Hook ---
+    // Main Effect Hook 
     useEffect(() => {
         // Capture video ref current value here for use in cleanup
         const currentVideoNode = videoRef.current;
@@ -553,32 +553,21 @@ function App() {
 
     return (
         <div className="App" data-theme={theme}>
-    
-          {/* ===== LEFT PANEL ===== */}
           <div className="left-panel">
-    
-            {/* Theme Toggle Button */}
             <button className="theme-toggle" onClick={toggleTheme}>
               Switch to {theme === 'light' ? 'Dark' : 'Light'} Mode
             </button>
-    
-            {/* Camera Feed Area */}
             <div className="camera-feed">
-                  {/* Use the actual video tag for MediaPipe */}
                   <video
                     ref={videoRef}
                     autoPlay
                     playsInline
                     style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px', transform: 'scaleX(-1)' }} // Flip horizontally if needed
                   />
-                {/* Loading/Error Overlay can go here */}
                 {isLoading && <div className="loading-overlay">Loading Models & Webcam...</div>}
                 {error && <div className="error-overlay">Error: {error}</div>}
             </div>
-    
-            {/* Controls Area */}
             <div className="controls">
-              {/* URL Display/Input Area */}
                <input
                    type="text"
                    className="url-input"
@@ -591,30 +580,24 @@ function App() {
                        backgroundColor: 'var(--control-bg-light)', color: 'var(--control-text-light)'
                    }}
                />
-    
-               {/* Dropzone Element */}
+
                <div {...getRootProps()} className="dropzone">
                    <input {...getInputProps()} />
                    <p>Drag & drop your downloaded .glb file here, or click to select</p>
                </div>
-               {/* End Dropzone */}
     
             </div>
           </div>
-    
-          {/* ===== RIGHT PANEL ===== */}
           <div className="right-panel">
-              {/* Conditionally render Canvas only when URL is valid */}
               {url ? (
                   // Find this Canvas component
                   <Canvas
                       style={{ width: '100%', height: '100%' }}
-                      // --- MODIFY THIS CAMERA PROP ---
+                      // Modify Camera prop if needed
                       camera={{
-                          fov: 25, // You can experiment with fov later if needed (e.g., 30)
+                          fov: 25, // Can experiment with fov later if needed (e.g., 30)
                           position: [0, 0, 9] // Changed from [0, 0.5, 5] - Moves camera back (z=9) and centers vertically (y=0)
                       }}
-                      // --- END OF MODIFICATION ---
                       shadows
                   >
                       <ambientLight intensity={0.8} />
@@ -640,8 +623,6 @@ function App() {
                   </div>
               )}
           </div>
-    
-          {/* ===== LOGO ===== */}
           <img
             src="your-logo.png" // Replace with your logo path
             alt="Logo"
