@@ -2,8 +2,6 @@
 
 A real-time 3D avatar animation system that uses your webcam to capture facial expressions, hand gestures, and body poses, then applies them to a customizable 3D avatar in real-time.
 
-![Motion Capture Avatar Demo](demo-screenshot.png)
-
 ## Features
 
 - **Real-time Face Tracking**: Captures facial expressions and head movements using MediaPipe Face Landmarker
